@@ -11,7 +11,9 @@
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
 #include <openssl/objects.h>
-#include "asn1_locl.h"
+#include "asn1_local.h"
+
+DEFINE_STACK_OF(ASN1_VALUE)
 
 /* Free up an ASN1 structure */
 
@@ -33,9 +35,9 @@ void asn1_item_embed_free(ASN1_VALUE **pval, const ASN1_ITEM *it, int embed)
     ASN1_aux_cb *asn1_cb;
     int i;
 
-    if (!pval)
+    if (pval == NULL)
         return;
-    if ((it->itype != ASN1_ITYPE_PRIMITIVE) && !*pval)
+    if ((it->itype != ASN1_ITYPE_PRIMITIVE) && *pval == NULL)
         return;
     if (aux && aux->asn1_cb)
         asn1_cb = aux->asn1_cb;
@@ -103,7 +105,7 @@ void asn1_item_embed_free(ASN1_VALUE **pval, const ASN1_ITEM *it, int embed)
             ASN1_VALUE **pseqval;
 
             tt--;
-            seqtt = asn1_do_adb(pval, tt, 0);
+            seqtt = asn1_do_adb(*pval, tt, 0);
             if (!seqtt)
                 continue;
             pseqval = asn1_get_field_ptr(pval, seqtt);
@@ -168,15 +170,15 @@ void asn1_primitive_free(ASN1_VALUE **pval, const ASN1_ITEM *it, int embed)
 
         utype = typ->type;
         pval = &typ->value.asn1_value;
-        if (!*pval)
+        if (*pval == NULL)
             return;
     } else if (it->itype == ASN1_ITYPE_MSTRING) {
         utype = -1;
-        if (!*pval)
+        if (*pval == NULL)
             return;
     } else {
         utype = it->utype;
-        if ((utype != V_ASN1_BOOLEAN) && !*pval)
+        if ((utype != V_ASN1_BOOLEAN) && *pval == NULL)
             return;
     }
 

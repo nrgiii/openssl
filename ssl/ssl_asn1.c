@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "ssl_locl.h"
+#include "ssl_local.h"
 #include <openssl/asn1t.h>
 #include <openssl/x509.h>
 
@@ -83,9 +83,9 @@ IMPLEMENT_STATIC_ASN1_ENCODE_FUNCTIONS(SSL_SESSION_ASN1)
 /* Initialise OCTET STRING from buffer and length */
 
 static void ssl_session_oinit(ASN1_OCTET_STRING **dest, ASN1_OCTET_STRING *os,
-                              unsigned char *data, size_t len)
+                              const unsigned char *data, size_t len)
 {
-    os->data = data;
+    os->data = (unsigned char *)data; /* justified cast: data is not modified */
     os->length = (int)len;
     os->flags = 0;
     *dest = os;
@@ -93,15 +93,15 @@ static void ssl_session_oinit(ASN1_OCTET_STRING **dest, ASN1_OCTET_STRING *os,
 
 /* Initialise OCTET STRING from string */
 static void ssl_session_sinit(ASN1_OCTET_STRING **dest, ASN1_OCTET_STRING *os,
-                              char *data)
+                              const char *data)
 {
     if (data != NULL)
-        ssl_session_oinit(dest, os, (unsigned char *)data, strlen(data));
+        ssl_session_oinit(dest, os, (const unsigned char *)data, strlen(data));
     else
         *dest = NULL;
 }
 
-int i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp)
+int i2d_SSL_SESSION(const SSL_SESSION *in, unsigned char **pp)
 {
 
     SSL_SESSION_ASN1 as;
@@ -250,7 +250,7 @@ SSL_SESSION *d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp,
     if (as == NULL)
         goto err;
 
-    if (!a || !*a) {
+    if (a == NULL || *a == NULL) {
         ret = SSL_SESSION_new();
         if (ret == NULL)
             goto err;

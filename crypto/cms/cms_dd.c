@@ -13,7 +13,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/err.h>
 #include <openssl/cms.h>
-#include "cms_lcl.h"
+#include "cms_local.h"
 
 /* CMS DigestedData Utilities */
 
@@ -45,14 +45,14 @@ CMS_ContentInfo *cms_DigestedData_create(const EVP_MD *md)
     return NULL;
 }
 
-BIO *cms_DigestedData_init_bio(CMS_ContentInfo *cms)
+BIO *cms_DigestedData_init_bio(const CMS_ContentInfo *cms)
 {
     CMS_DigestedData *dd;
     dd = cms->d.digestedData;
     return cms_DigestAlgorithm_init_bio(dd->digestAlgorithm);
 }
 
-int cms_DigestedData_do_final(CMS_ContentInfo *cms, BIO *chain, int verify)
+int cms_DigestedData_do_final(const CMS_ContentInfo *cms, BIO *chain, int verify)
 {
     EVP_MD_CTX *mctx = EVP_MD_CTX_new();
     unsigned char md[EVP_MAX_MD_SIZE];

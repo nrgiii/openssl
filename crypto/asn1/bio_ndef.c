@@ -49,6 +49,7 @@ static int ndef_suffix(BIO *b, unsigned char **pbuf, int *plen, void *parg);
 static int ndef_suffix_free(BIO *b, unsigned char **pbuf, int *plen,
                             void *parg);
 
+/* unfortunately cannot constify this due to CMS_stream() and PKCS7_stream() */
 BIO *BIO_new_NDEF(BIO *out, ASN1_VALUE *val, const ASN1_ITEM *it)
 {
     NDEF_SUPPORT *ndef_aux = NULL;
@@ -107,7 +108,7 @@ static int ndef_prefix(BIO *b, unsigned char **pbuf, int *plen, void *parg)
     unsigned char *p;
     int derlen;
 
-    if (!parg)
+    if (parg == NULL)
         return 0;
 
     ndef_aux = *(NDEF_SUPPORT **)parg;
@@ -122,7 +123,7 @@ static int ndef_prefix(BIO *b, unsigned char **pbuf, int *plen, void *parg)
     *pbuf = p;
     derlen = ASN1_item_ndef_i2d(ndef_aux->val, &p, ndef_aux->it);
 
-    if (!*ndef_aux->boundary)
+    if (*ndef_aux->boundary == NULL)
         return 0;
 
     *plen = *ndef_aux->boundary - *pbuf;
@@ -135,7 +136,7 @@ static int ndef_prefix_free(BIO *b, unsigned char **pbuf, int *plen,
 {
     NDEF_SUPPORT *ndef_aux;
 
-    if (!parg)
+    if (parg == NULL)
         return 0;
 
     ndef_aux = *(NDEF_SUPPORT **)parg;
@@ -167,7 +168,7 @@ static int ndef_suffix(BIO *b, unsigned char **pbuf, int *plen, void *parg)
     const ASN1_AUX *aux;
     ASN1_STREAM_ARG sarg;
 
-    if (!parg)
+    if (parg == NULL)
         return 0;
 
     ndef_aux = *(NDEF_SUPPORT **)parg;
@@ -183,6 +184,8 @@ static int ndef_suffix(BIO *b, unsigned char **pbuf, int *plen, void *parg)
         return 0;
 
     derlen = ASN1_item_ndef_i2d(ndef_aux->val, NULL, ndef_aux->it);
+    if (derlen < 0)
+        return 0;
     if ((p = OPENSSL_malloc(derlen)) == NULL) {
         ASN1err(ASN1_F_NDEF_SUFFIX, ERR_R_MALLOC_FAILURE);
         return 0;
@@ -192,7 +195,7 @@ static int ndef_suffix(BIO *b, unsigned char **pbuf, int *plen, void *parg)
     *pbuf = p;
     derlen = ASN1_item_ndef_i2d(ndef_aux->val, &p, ndef_aux->it);
 
-    if (!*ndef_aux->boundary)
+    if (*ndef_aux->boundary == NULL)
         return 0;
     *pbuf = *ndef_aux->boundary;
     *plen = derlen - (*ndef_aux->boundary - ndef_aux->derbuf);

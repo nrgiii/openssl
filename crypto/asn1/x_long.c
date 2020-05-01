@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2000-2020 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -11,10 +11,6 @@
 #include "internal/cryptlib.h"
 #include <openssl/asn1t.h>
 
-#if OPENSSL_API_3
-NON_EMPTY_TRANSLATION_UNIT
-#else
-
 #define COPY_SIZE(a, b) (sizeof(a) < sizeof(b) ? sizeof(a) : sizeof(b))
 
 /*
@@ -25,11 +21,11 @@ NON_EMPTY_TRANSLATION_UNIT
 static int long_new(ASN1_VALUE **pval, const ASN1_ITEM *it);
 static void long_free(ASN1_VALUE **pval, const ASN1_ITEM *it);
 
-static int long_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype,
+static int long_i2c(const ASN1_VALUE **pval, unsigned char *cont, int *putype,
                     const ASN1_ITEM *it);
 static int long_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
                     int utype, char *free_cont, const ASN1_ITEM *it);
-static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
+static int long_print(BIO *out, const ASN1_VALUE **pval, const ASN1_ITEM *it,
                       int indent, const ASN1_PCTX *pctx);
 
 static ASN1_PRIMITIVE_FUNCS long_pf = {
@@ -86,7 +82,7 @@ static int num_bits_ulong(unsigned long value)
     return (int)ret;
 }
 
-static int long_i2c(ASN1_VALUE **pval, unsigned char *cont, int *putype,
+static int long_i2c(const ASN1_VALUE **pval, unsigned char *cont, int *putype,
                     const ASN1_ITEM *it)
 {
     long ltmp;
@@ -190,7 +186,7 @@ static int long_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
     return 1;
 }
 
-static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
+static int long_print(BIO *out, const ASN1_VALUE **pval, const ASN1_ITEM *it,
                       int indent, const ASN1_PCTX *pctx)
 {
     long l;
@@ -198,4 +194,3 @@ static int long_print(BIO *out, ASN1_VALUE **pval, const ASN1_ITEM *it,
     memcpy(&l, pval, COPY_SIZE(*pval, l));
     return BIO_printf(out, "%ld\n", l);
 }
-#endif

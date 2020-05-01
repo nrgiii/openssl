@@ -65,11 +65,14 @@ my @opensslcpphandlers = (
     # These are used to convert certain pre-precessor expressions into
     # others that @cpphandlers have a better chance to understand.
 
-    { regexp   => qr/#if (!?)OPENSSL_API_([0-9_]+)$/,
+    # This changes any OPENSSL_NO_DEPRECATED_x_y[_z] check to a check of
+    # OPENSSL_NO_DEPRECATEDIN_x_y[_z].  That's due to <openssl/macros.h>
+    # creating OPENSSL_NO_DEPRECATED_x_y[_z], but the ordinals files using
+    # DEPRECATEDIN_x_y[_z].
+    { regexp   => qr/#if(def|ndef) OPENSSL_NO_DEPRECATED_(\d+_\d+(?:_\d+)?)$/,
       massager => sub {
-          my $cnd = $1 eq '!' ? 'ndef' : 'def';
           return (<<"EOF");
-#if$cnd DEPRECATEDIN_$2
+#if$1 OPENSSL_NO_DEPRECATEDIN_$2
 EOF
       }
    }
@@ -256,25 +259,12 @@ my @opensslchandlers = (
     # an error.
 
     #####
-    # Global variable stuff
-    { regexp   => qr/OPENSSL_DECLARE_GLOBAL<<<\((.*),(.*)\)>>>;/,
-      massager => sub { return (<<"EOF");
-#ifndef OPENSSL_EXPORT_VAR_AS_FUNCTION
-OPENSSL_EXPORT $1 _shadow_$2;
-#else
-$1 *_shadow_$2(void);
-#endif
-EOF
-      },
-    },
-
-    #####
     # Deprecated stuff, by OpenSSL release.
 
     # We trick the parser by pretending that the declaration is wrapped in a
     # check if the DEPRECATEDIN macro is defined or not.  Callers of parse()
     # will have to decide what to do with it.
-    { regexp   => qr/(DEPRECATEDIN_\d+(?:_\d+_\d+)?)<<<\((.*)\)>>>/,
+    { regexp   => qr/(DEPRECATEDIN_\d+_\d+(?:_\d+)?)<<<\((.*)\)>>>/,
       massager => sub { return (<<"EOF");
 #ifndef $1
 $2;
@@ -331,7 +321,7 @@ EOF
 #          return ("$before$stack_of$after");
 #      }
 #    },
-    { regexp   => qr/SKM_DEFINE_STACK_OF<<<\((.*),(.*),(.*)\)>>>/,
+    { regexp   => qr/SKM_DEFINE_STACK_OF<<<\((.*),\s*(.*),\s*(.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
 STACK_OF($1);
@@ -370,58 +360,59 @@ static ossl_inline sk_$1_compfunc sk_$1_set_cmp_func(STACK_OF($1) *sk,
 EOF
       }
     },
-    { regexp   => qr/DEFINE_SPECIAL_STACK_OF<<<\((.*),(.*)\)>>>/,
+    { regexp   => qr/DEFINE_SPECIAL_STACK_OF<<<\((.*),\s*(.*)\)>>>/,
       massager => sub { return ("SKM_DEFINE_STACK_OF($1,$2,$2)"); },
     },
     { regexp   => qr/DEFINE_STACK_OF<<<\((.*)\)>>>/,
       massager => sub { return ("SKM_DEFINE_STACK_OF($1,$1,$1)"); },
     },
-    { regexp   => qr/DEFINE_SPECIAL_STACK_OF_CONST<<<\((.*),(.*)\)>>>/,
+    { regexp   => qr/DEFINE_SPECIAL_STACK_OF_CONST<<<\((.*),\s*(.*)\)>>>/,
       massager => sub { return ("SKM_DEFINE_STACK_OF($1,const $2,$2)"); },
     },
     { regexp   => qr/DEFINE_STACK_OF_CONST<<<\((.*)\)>>>/,
       massager => sub { return ("SKM_DEFINE_STACK_OF($1,const $1,$1)"); },
     },
-    { regexp   => qr/PREDECLARE_STACK_OF<<<\((.*)\)>>>/,
-      massager => sub { return ("STACK_OF($1);"); }
+    { regexp   => qr/DEFINE_STACK_OF_STRING<<<\((.*?)\)>>>/,
+      massager => sub {
+          return ("DEFINE_SPECIAL_STACK_OF(OPENSSL_STRING, char)");
+      }
     },
-    { regexp   => qr/DECLARE_STACK_OF<<<\((.*)\)>>>/,
-      massager => sub { return ("STACK_OF($1);"); }
+    { regexp   => qr/DEFINE_STACK_OF_CSTRING<<<\((.*?)\)>>>/,
+      massager => sub {
+          return ("DEFINE_SPECIAL_STACK_OF_CONST(OPENSSL_CSTRING, char)");
+      }
     },
-    { regexp   => qr/DECLARE_SPECIAL_STACK_OF<<<\((.*?),(.*?)\)>>>/,
-      massager => sub { return ("STACK_OF($1);"); }
-     },
+    # DEFINE_OR_DECLARE macro calls must be interpretted as DEFINE macro
+    # calls, because that's what they look like to the external apps.
+    # (if that ever changes, we must change the substitutions to STACK_OF)
+    { regexp   => qr/DEFINE_OR_DECLARE_STACK_OF<<<\((.*?)\)>>>/,
+      massager => sub { return ("DEFINE_STACK_OF($1)"); }
+    },
+    { regexp   => qr/DEFINE_OR_DECLARE_STACK_OF_STRING<<<\(\)>>>/,
+      massager => sub { return ("DEFINE_STACK_OF_STRING()"); },
+    },
+    { regexp   => qr/DEFINE_OR_DECLARE_STACK_OF_CSTRING<<<\(\)>>>/,
+      massager => sub { return ("DEFINE_STACK_OF_CSTRING()"); },
+    },
 
     #####
     # ASN1 stuff
-
-    { regexp   => qr/TYPEDEF_D2I_OF<<<\((.*)\)>>>/,
-      massager => sub {
-          return ("typedef $1 *d2i_of_$1($1 **,const unsigned char **,long)");
-      },
-    },
-    { regexp   => qr/TYPEDEF_I2D_OF<<<\((.*)\)>>>/,
-      massager => sub {
-          return ("typedef $1 *i2d_of_$1($1 *,unsigned char **)");
-      },
-    },
-    { regexp   => qr/TYPEDEF_D2I2D_OF<<<\((.*)\)>>>/,
-      massager => sub {
-          return ("TYPEDEF_D2I_OF($1); TYPEDEF_I2D_OF($1)");
-      },
-    },
     { regexp   => qr/DECLARE_ASN1_ITEM<<<\((.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
-#ifndef OPENSSL_EXPORT_VAR_AS_FUNCTION
-OPENSSL_EXTERN const ASN1_ITEM *$1_it;
-#else
 const ASN1_ITEM *$1_it(void);
-#endif
 EOF
       },
     },
-    { regexp   => qr/DECLARE_ASN1_ENCODE_FUNCTIONS<<<\((.*),(.*),(.*)\)>>>/,
+    { regexp   => qr/DECLARE_ASN1_ENCODE_FUNCTIONS_only<<<\((.*),\s*(.*)\)>>>/,
+      massager => sub {
+          return (<<"EOF");
+int d2i_$2(void);
+int i2d_$2(void);
+EOF
+      },
+    },
+    { regexp   => qr/DECLARE_ASN1_ENCODE_FUNCTIONS<<<\((.*),\s*(.*),\s*(.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
 int d2i_$3(void);
@@ -430,12 +421,20 @@ DECLARE_ASN1_ITEM($2)
 EOF
       },
     },
-    { regexp   => qr/DECLARE_ASN1_ENCODE_FUNCTIONS_const<<<\((.*),(.*)\)>>>/,
+    { regexp   => qr/DECLARE_ASN1_ENCODE_FUNCTIONS_name<<<\((.*),\s*(.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
 int d2i_$2(void);
 int i2d_$2(void);
 DECLARE_ASN1_ITEM($2)
+EOF
+      },
+    },
+    { regexp   => qr/DECLARE_ASN1_ALLOC_FUNCTIONS_name<<<\((.*),\s*(.*)\)>>>/,
+      massager => sub {
+          return (<<"EOF");
+int $2_free(void);
+int $2_new(void);
 EOF
       },
     },
@@ -447,7 +446,7 @@ int $1_new(void);
 EOF
       },
     },
-    { regexp   => qr/DECLARE_ASN1_FUNCTIONS_name<<<\((.*),(.*)\)>>>/,
+    { regexp   => qr/DECLARE_ASN1_FUNCTIONS_name<<<\((.*),\s*(.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
 int d2i_$2(void);
@@ -458,17 +457,7 @@ DECLARE_ASN1_ITEM($2)
 EOF
       },
     },
-    { regexp   => qr/DECLARE_ASN1_FUNCTIONS_fname<<<\((.*),(.*),(.*)\)>>>/,
-      massager => sub { return (<<"EOF");
-int d2i_$3(void);
-int i2d_$3(void);
-int $3_free(void);
-int $3_new(void);
-DECLARE_ASN1_ITEM($2)
-EOF
-      }
-    },
-    { regexp   => qr/DECLARE_ASN1_FUNCTIONS(?:_const)?<<<\((.*)\)>>>/,
+    { regexp   => qr/DECLARE_ASN1_FUNCTIONS<<<\((.*)\)>>>/,
       massager => sub { return (<<"EOF");
 int d2i_$1(void);
 int i2d_$1(void);
@@ -492,7 +481,7 @@ int $1_print_ctx(void);
 EOF
       }
     },
-    { regexp   => qr/DECLARE_ASN1_PRINT_FUNCTION_name<<<\((.*),(.*)\)>>>/,
+    { regexp   => qr/DECLARE_ASN1_PRINT_FUNCTION_name<<<\((.*),\s*(.*)\)>>>/,
       massager => sub {
           return (<<"EOF");
 int $2_print_ctx(void);
@@ -501,6 +490,20 @@ EOF
     },
     { regexp   => qr/DECLARE_ASN1_SET_OF<<<\((.*)\)>>>/,
       massager => sub { return (); }
+    },
+    { regexp   => qr/DECLARE_ASN1_DUP_FUNCTION<<<\((.*)\)>>>/,
+      massager => sub {
+          return (<<"EOF");
+int $1_dup(void);
+EOF
+      }
+    },
+    { regexp   => qr/DECLARE_ASN1_DUP_FUNCTION_name<<<\((.*),\s*(.*)\)>>>/,
+      massager => sub {
+          return (<<"EOF");
+int $2_dup(void);
+EOF
+      }
     },
     { regexp   => qr/DECLARE_PKCS12_SET_OF<<<\((.*)\)>>>/,
       massager => sub { return (); }
@@ -555,8 +558,17 @@ my @chandlers = (
     # Note that the main parse function has a special hack for 'extern "C" {'
     # which can't be done in handlers
     # We simply ignore it.
-    { regexp   => qr/extern "C" (.*;)/,
+    { regexp   => qr/^extern "C" (.*(?:;|>>>))/,
       massager => sub { return ($1); },
+    },
+    # any other extern is just ignored
+    { regexp   => qr/^\s*                       # Any spaces before
+                     extern                     # The keyword we look for
+                     \b                         # word to non-word boundary
+                     .*                         # Anything after
+                     ;
+                    /x,
+      massager => sub { return (); },
     },
     # union, struct and enum definitions
     # Because this one might appear a little everywhere within type

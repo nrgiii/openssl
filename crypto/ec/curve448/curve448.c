@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2017-2020 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright 2015-2016 Cryptography Research, Inc.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
@@ -15,7 +15,8 @@
 
 #include "point_448.h"
 #include "ed448.h"
-#include "curve448_lcl.h"
+#include "crypto/ecx.h"
+#include "curve448_local.h"
 
 #define COFACTOR 4
 
@@ -27,8 +28,8 @@
 static const curve448_scalar_t precomputed_scalarmul_adjustment = {
     {
         {
-            SC_LIMB(0xc873d6d54a7bb0cf), SC_LIMB(0xe933d8d723a70aad),
-            SC_LIMB(0xbb124b65129c96fd), SC_LIMB(0x00000008335dc163)
+            SC_LIMB(0xc873d6d54a7bb0cfULL), SC_LIMB(0xe933d8d723a70aadULL),
+            SC_LIMB(0xbb124b65129c96fdULL), SC_LIMB(0x00000008335dc163ULL)
         }
     }
 };
@@ -501,9 +502,9 @@ struct smvt_control {
 };
 
 #if defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3))
-# define NUMTRAILINGZEROS	__builtin_ctz
+# define NUMTRAILINGZEROS       __builtin_ctz
 #else
-# define NUMTRAILINGZEROS	numtrailingzeros
+# define NUMTRAILINGZEROS       numtrailingzeros
 static uint32_t numtrailingzeros(uint32_t i)
 {
     uint32_t tmp;

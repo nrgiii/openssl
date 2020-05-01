@@ -7,8 +7,14 @@
  * https://www.openssl.org/source/license.html
  */
 
-#ifndef HEADER_TS_H
-# define HEADER_TS_H
+#ifndef OPENSSL_TS_H
+# define OPENSSL_TS_H
+# pragma once
+
+# include <openssl/macros.h>
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+#  define HEADER_TS_H
+# endif
 
 # include <openssl/opensslconf.h>
 
@@ -59,76 +65,58 @@ typedef struct TS_status_info_st TS_STATUS_INFO;
 
 typedef struct TS_resp_st TS_RESP;
 
-TS_REQ *TS_REQ_new(void);
-void TS_REQ_free(TS_REQ *a);
-int i2d_TS_REQ(const TS_REQ *a, unsigned char **pp);
-TS_REQ *d2i_TS_REQ(TS_REQ **a, const unsigned char **pp, long length);
-
-TS_REQ *TS_REQ_dup(TS_REQ *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_REQ)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_REQ, TS_REQ)
+DECLARE_ASN1_DUP_FUNCTION(TS_REQ)
 
 #ifndef OPENSSL_NO_STDIO
 TS_REQ *d2i_TS_REQ_fp(FILE *fp, TS_REQ **a);
-int i2d_TS_REQ_fp(FILE *fp, TS_REQ *a);
+int i2d_TS_REQ_fp(FILE *fp, const TS_REQ *a);
 #endif
 TS_REQ *d2i_TS_REQ_bio(BIO *fp, TS_REQ **a);
-int i2d_TS_REQ_bio(BIO *fp, TS_REQ *a);
+int i2d_TS_REQ_bio(BIO *fp, const TS_REQ *a);
 
-TS_MSG_IMPRINT *TS_MSG_IMPRINT_new(void);
-void TS_MSG_IMPRINT_free(TS_MSG_IMPRINT *a);
-int i2d_TS_MSG_IMPRINT(const TS_MSG_IMPRINT *a, unsigned char **pp);
-TS_MSG_IMPRINT *d2i_TS_MSG_IMPRINT(TS_MSG_IMPRINT **a,
-                                   const unsigned char **pp, long length);
-
-TS_MSG_IMPRINT *TS_MSG_IMPRINT_dup(TS_MSG_IMPRINT *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_MSG_IMPRINT)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_MSG_IMPRINT, TS_MSG_IMPRINT)
+DECLARE_ASN1_DUP_FUNCTION(TS_MSG_IMPRINT)
 
 #ifndef OPENSSL_NO_STDIO
 TS_MSG_IMPRINT *d2i_TS_MSG_IMPRINT_fp(FILE *fp, TS_MSG_IMPRINT **a);
-int i2d_TS_MSG_IMPRINT_fp(FILE *fp, TS_MSG_IMPRINT *a);
+int i2d_TS_MSG_IMPRINT_fp(FILE *fp, const TS_MSG_IMPRINT *a);
 #endif
 TS_MSG_IMPRINT *d2i_TS_MSG_IMPRINT_bio(BIO *bio, TS_MSG_IMPRINT **a);
-int i2d_TS_MSG_IMPRINT_bio(BIO *bio, TS_MSG_IMPRINT *a);
+int i2d_TS_MSG_IMPRINT_bio(BIO *bio, const TS_MSG_IMPRINT *a);
 
-TS_RESP *TS_RESP_new(void);
-void TS_RESP_free(TS_RESP *a);
-int i2d_TS_RESP(const TS_RESP *a, unsigned char **pp);
-TS_RESP *d2i_TS_RESP(TS_RESP **a, const unsigned char **pp, long length);
-TS_TST_INFO *PKCS7_to_TS_TST_INFO(PKCS7 *token);
-TS_RESP *TS_RESP_dup(TS_RESP *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_RESP)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_RESP, TS_RESP)
+DECLARE_ASN1_DUP_FUNCTION(TS_RESP)
 
 #ifndef OPENSSL_NO_STDIO
 TS_RESP *d2i_TS_RESP_fp(FILE *fp, TS_RESP **a);
-int i2d_TS_RESP_fp(FILE *fp, TS_RESP *a);
+int i2d_TS_RESP_fp(FILE *fp, const TS_RESP *a);
 #endif
 TS_RESP *d2i_TS_RESP_bio(BIO *bio, TS_RESP **a);
-int i2d_TS_RESP_bio(BIO *bio, TS_RESP *a);
+int i2d_TS_RESP_bio(BIO *bio, const TS_RESP *a);
 
-TS_STATUS_INFO *TS_STATUS_INFO_new(void);
-void TS_STATUS_INFO_free(TS_STATUS_INFO *a);
-int i2d_TS_STATUS_INFO(const TS_STATUS_INFO *a, unsigned char **pp);
-TS_STATUS_INFO *d2i_TS_STATUS_INFO(TS_STATUS_INFO **a,
-                                   const unsigned char **pp, long length);
-TS_STATUS_INFO *TS_STATUS_INFO_dup(TS_STATUS_INFO *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_STATUS_INFO)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_STATUS_INFO, TS_STATUS_INFO)
+DECLARE_ASN1_DUP_FUNCTION(TS_STATUS_INFO)
 
-TS_TST_INFO *TS_TST_INFO_new(void);
-void TS_TST_INFO_free(TS_TST_INFO *a);
-int i2d_TS_TST_INFO(const TS_TST_INFO *a, unsigned char **pp);
-TS_TST_INFO *d2i_TS_TST_INFO(TS_TST_INFO **a, const unsigned char **pp,
-                             long length);
-TS_TST_INFO *TS_TST_INFO_dup(TS_TST_INFO *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_TST_INFO)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_TST_INFO, TS_TST_INFO)
+DECLARE_ASN1_DUP_FUNCTION(TS_TST_INFO)
+TS_TST_INFO *PKCS7_to_TS_TST_INFO(PKCS7 *token);
 
 #ifndef OPENSSL_NO_STDIO
 TS_TST_INFO *d2i_TS_TST_INFO_fp(FILE *fp, TS_TST_INFO **a);
-int i2d_TS_TST_INFO_fp(FILE *fp, TS_TST_INFO *a);
+int i2d_TS_TST_INFO_fp(FILE *fp, const TS_TST_INFO *a);
 #endif
 TS_TST_INFO *d2i_TS_TST_INFO_bio(BIO *bio, TS_TST_INFO **a);
-int i2d_TS_TST_INFO_bio(BIO *bio, TS_TST_INFO *a);
+int i2d_TS_TST_INFO_bio(BIO *bio, const TS_TST_INFO *a);
 
-TS_ACCURACY *TS_ACCURACY_new(void);
-void TS_ACCURACY_free(TS_ACCURACY *a);
-int i2d_TS_ACCURACY(const TS_ACCURACY *a, unsigned char **pp);
-TS_ACCURACY *d2i_TS_ACCURACY(TS_ACCURACY **a, const unsigned char **pp,
-                             long length);
-TS_ACCURACY *TS_ACCURACY_dup(TS_ACCURACY *a);
+DECLARE_ASN1_ALLOC_FUNCTIONS(TS_ACCURACY)
+DECLARE_ASN1_ENCODE_FUNCTIONS_only(TS_ACCURACY, TS_ACCURACY)
+DECLARE_ASN1_DUP_FUNCTION(TS_ACCURACY)
 
 int TS_REQ_set_version(TS_REQ *a, long version);
 long TS_REQ_get_version(const TS_REQ *a);
@@ -275,8 +263,6 @@ typedef int (*TS_extension_cb) (struct TS_resp_ctx *, X509_EXTENSION *,
                                 void *);
 
 typedef struct TS_resp_ctx TS_RESP_CTX;
-
-DEFINE_STACK_OF_CONST(EVP_MD)
 
 /* Creates a response context that can be used for generating responses. */
 TS_RESP_CTX *TS_RESP_CTX_new(void);
@@ -433,7 +419,10 @@ BIO *TS_VERIFY_CTX_set_data(TS_VERIFY_CTX *ctx, BIO *b);
 unsigned char *TS_VERIFY_CTX_set_imprint(TS_VERIFY_CTX *ctx,
                                          unsigned char *hexstr, long len);
 X509_STORE *TS_VERIFY_CTX_set_store(TS_VERIFY_CTX *ctx, X509_STORE *s);
-STACK_OF(X509) *TS_VERIFY_CTS_set_certs(TS_VERIFY_CTX *ctx, STACK_OF(X509) *certs);
+# ifndef OPENSSL_NO_DEPRECATED_3_0
+#  define TS_VERIFY_CTS_set_certs(ctx, cert) TS_VERIFY_CTX_set_certs(ctx,cert)
+# endif
+STACK_OF(X509) *TS_VERIFY_CTX_set_certs(TS_VERIFY_CTX *ctx, STACK_OF(X509) *certs);
 
 /*-
  * If ctx is NULL, it allocates and returns a new object, otherwise

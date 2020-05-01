@@ -1,7 +1,7 @@
 /*
  * Copyright 2018 The OpenSSL Project Authors. All Rights Reserved.
  *
- * Licensed under the OpenSSL license (the "License").  You may not use
+ * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
  * in the file LICENSE in the source distribution or at
  * https://www.openssl.org/source/license.html
@@ -14,8 +14,8 @@
  * shared fields have been moved into this file.
  */
 
-#ifndef HEADER_FMT_H
-#define HEADER_FMT_H
+#ifndef OSSL_APPS_FMT_H
+#define OSSL_APPS_FMT_H
 
 /* On some platforms, it's important to distinguish between text and binary
  * files.  On some, there might even be specific file formats for different
@@ -32,8 +32,8 @@
 # define FORMAT_PKCS12   6
 # define FORMAT_SMIME   (7 | B_FORMAT_TEXT)
 # define FORMAT_ENGINE   8                      /* Not really a file format */
-# define FORMAT_PEMRSA  (9 | B_FORMAT_TEXT)     /* PEM RSAPubicKey format */
-# define FORMAT_ASN1RSA  10                     /* DER RSAPubicKey format */
+# define FORMAT_PEMRSA  (9 | B_FORMAT_TEXT)     /* PEM RSAPublicKey format */
+# define FORMAT_ASN1RSA  10                     /* DER RSAPublicKey format */
 # define FORMAT_MSBLOB   11                     /* MS Key blob format */
 # define FORMAT_PVK      12                     /* MS PVK file format */
 # define FORMAT_HTTP     13                     /* Download using HTTP */
@@ -41,4 +41,4 @@
 
 int FMT_istext(int format);
 
-#endif /* HEADER_FMT_H_ */
+#endif /* OSSL_APPS_FMT_H_ */

@@ -10,14 +10,17 @@ X509_NAME lookup and enumeration functions
 
  #include <openssl/x509.h>
 
- int X509_NAME_get_index_by_NID(X509_NAME *name, int nid, int lastpos);
- int X509_NAME_get_index_by_OBJ(X509_NAME *name, const ASN1_OBJECT *obj, int lastpos);
+ int X509_NAME_get_index_by_NID(const X509_NAME *name, int nid, int lastpos);
+ int X509_NAME_get_index_by_OBJ(const X509_NAME *name,
+                                const ASN1_OBJECT *obj, int lastpos);
 
  int X509_NAME_entry_count(const X509_NAME *name);
  X509_NAME_ENTRY *X509_NAME_get_entry(const X509_NAME *name, int loc);
 
- int X509_NAME_get_text_by_NID(X509_NAME *name, int nid, char *buf, int len);
- int X509_NAME_get_text_by_OBJ(X509_NAME *name, const ASN1_OBJECT *obj, char *buf, int len);
+ int X509_NAME_get_text_by_NID(const X509_NAME *name, int nid,
+                               char *buf, int len);
+ int X509_NAME_get_text_by_OBJ(const X509_NAME *name, const ASN1_OBJECT *obj,
+                               char *buf, int len);
 
 =head1 DESCRIPTION
 
@@ -69,6 +72,18 @@ Applications which could pass invalid NIDs to X509_NAME_get_index_by_NID()
 should check for the return value of -2. Alternatively the NID validity
 can be determined first by checking OBJ_nid2obj(nid) is not NULL.
 
+=head1 RETURN VALUES
+
+X509_NAME_get_index_by_NID() and X509_NAME_get_index_by_OBJ()
+return the index of the next matching entry or -1 if not found.
+X509_NAME_get_index_by_NID() can also return -2 if the supplied
+NID is invalid.
+
+X509_NAME_entry_count() returns the total number of entries.
+
+X509_NAME_get_entry() returns an B<X509_NAME> pointer to the
+requested entry or B<NULL> if the index is invalid.
+
 =head1 EXAMPLES
 
 Process all entries:
@@ -94,25 +109,13 @@ Process all commonName entries:
      /* Do something with e */
  }
 
-=head1 RETURN VALUES
-
-X509_NAME_get_index_by_NID() and X509_NAME_get_index_by_OBJ()
-return the index of the next matching entry or -1 if not found.
-X509_NAME_get_index_by_NID() can also return -2 if the supplied
-NID is invalid.
-
-X509_NAME_entry_count() returns the total number of entries.
-
-X509_NAME_get_entry() returns an B<X509_NAME> pointer to the
-requested entry or B<NULL> if the index is invalid.
-
 =head1 SEE ALSO
 
 L<ERR_get_error(3)>, L<d2i_X509_NAME(3)>
 
 =head1 COPYRIGHT
 
-Copyright 2002-2018 The OpenSSL Project Authors. All Rights Reserved.
+Copyright 2002-2020 The OpenSSL Project Authors. All Rights Reserved.
 
 Licensed under the Apache License 2.0 (the "License").  You may not use
 this file except in compliance with the License.  You can obtain a copy
