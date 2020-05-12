@@ -78,6 +78,8 @@ extern "C" {
 #endif
 
 int EVP_set_default_properties(OPENSSL_CTX *libctx, const char *propq);
+int EVP_default_properties_is_fips_enabled(OPENSSL_CTX *libctx);
+int EVP_default_properties_enable_fips(OPENSSL_CTX *libctx, int enable);
 
 # define EVP_PKEY_MO_SIGN        0x0001
 # define EVP_PKEY_MO_VERIFY      0x0002
@@ -1516,9 +1518,19 @@ void EVP_PKEY_CTX_set0_keygen_info(EVP_PKEY_CTX *ctx, int *dat, int datlen);
 
 EVP_PKEY *EVP_PKEY_new_mac_key(int type, ENGINE *e,
                                const unsigned char *key, int keylen);
+EVP_PKEY *EVP_PKEY_new_raw_private_key_with_libctx(OPENSSL_CTX *libctx,
+                                                   const char *keytype,
+                                                   const char *propq,
+                                                   const unsigned char *priv,
+                                                   size_t len);
 EVP_PKEY *EVP_PKEY_new_raw_private_key(int type, ENGINE *e,
                                        const unsigned char *priv,
                                        size_t len);
+EVP_PKEY *EVP_PKEY_new_raw_public_key_with_libctx(OPENSSL_CTX *libctx,
+                                                  const char *keytype,
+                                                  const char *propq,
+                                                  const unsigned char *pub,
+                                                  size_t len);
 EVP_PKEY *EVP_PKEY_new_raw_public_key(int type, ENGINE *e,
                                       const unsigned char *pub,
                                       size_t len);

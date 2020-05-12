@@ -331,8 +331,9 @@ typedef int (*SSL_async_callback_fn)(SSL *s, void *arg);
 /*
  * Reserved value (until OpenSSL 3.0.0)                  0x00000080U
  * Reserved value (until OpenSSL 3.0.0)                  0x00000100U
- * Reserved value (until OpenSSL 3.0.0)                  0x00000200U
  */
+
+# define SSL_OP_DISABLE_TLSEXT_CA_NAMES                  0x00000200U
 
 /* In TLSv1.3 allow a non-(ec)dhe based kex_mode */
 # define SSL_OP_ALLOW_NO_DHE_KEX                         0x00000400U
@@ -1959,6 +1960,7 @@ int SSL_get_key_update_type(const SSL *s);
 int SSL_renegotiate(SSL *s);
 int SSL_renegotiate_abbreviated(SSL *s);
 __owur int SSL_renegotiate_pending(const SSL *s);
+int SSL_new_session_ticket(SSL *s);
 int SSL_shutdown(SSL *s);
 __owur int SSL_verify_client_post_handshake(SSL *s);
 void SSL_CTX_set_post_handshake_auth(SSL_CTX *ctx, int val);
